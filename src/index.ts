@@ -13,7 +13,6 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
 
   const globs = castArray ( glob );
   const cwd = options?.cwd ?? process.cwd ();
-  const ignore = ignoreCompile ( options?.ignore );
 
   const bucketDirectories: string[][] = [];
   const bucketFiles: string[][] = [];
@@ -30,13 +29,14 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
     for ( const folder of folders ) {
 
       const rootPath = path.join ( cwd, folder ).replace ( /\/$/, '' );
-      const isRelativeMatch = ( targetPath: string ) => isMatch ( path.relative ( rootPath, targetPath ) );
+      const isIgnored = ignoreCompile ( rootPath, options?.ignore );
+      const isRelativeMatch = ( targetPath: string ) => isMatch ( rootPath, targetPath );
 
       const result = await readdir ( rootPath, {
         depth: options?.depth,
         limit: options?.limit,
         followSymlinks: options?.followSymlinks,
-        ignore,
+        ignore: isIgnored,
         signal: options?.signal
       });
 

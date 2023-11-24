@@ -1,6 +1,7 @@
 
 /* IMPORT */
 
+import path from 'node:path';
 import zeptomatch from 'zeptomatch';
 
 /* MAIN */
@@ -112,7 +113,7 @@ const globsExplode = ( globs: string[] ): [paths: string[], globs: string[]][] =
 
 };
 
-const globCompile = ( glob: string ): (( targetPath: string ) => boolean) => {
+const globCompile = ( glob: string ): (( rootPath: string, targetPath: string ) => boolean) => {
 
   if ( !glob || glob === '**/*' ) {
 
@@ -127,7 +128,7 @@ const globCompile = ( glob: string ): (( targetPath: string ) => boolean) => {
 
     const extension = simpleMatch[1];
 
-    return targetPath => targetPath.endsWith ( extension );
+    return ( rootPath, targetPath ) => targetPath.endsWith ( extension );
 
   }
 
@@ -138,29 +139,31 @@ const globCompile = ( glob: string ): (( targetPath: string ) => boolean) => {
 
     const extensions = simpleGroupMatch[1].split ( ',' );
 
-    return targetPath => extensions.some ( extension => targetPath.endsWith ( extension ) );
+    return ( rootPath, targetPath ) => extensions.some ( extension => targetPath.endsWith ( extension ) );
 
   }
 
   const re = zeptomatch.compile ( glob );
 
-  return targetPath => re.test ( targetPath );
+  return ( rootPath, targetPath ) => re.test ( path.relative ( rootPath, targetPath ) );
 
 };
 
-const globsCompile = ( globs: string[] ): (( targetPath: string ) => boolean) => {
+const globsCompile = ( globs: string[] ): (( rootPath: string, targetPath: string ) => boolean) => {
 
   const fns = globs.map ( globCompile );
 
-  return targetPath => fns.some ( fn => fn ( targetPath ) );
+  return ( rootPath, targetPath ) => fns.some ( fn => fn ( rootPath, targetPath ) );
 
 };
 
-const ignoreCompile = ( ignore?: (( targetPath: string ) => boolean) | RegExp | string | string[] ): (( targetPath: string ) => boolean) | RegExp | undefined => {
+const ignoreCompile = ( rootPath: string, ignore?: (( targetPath: string ) => boolean) | RegExp | string | string[] ): (( targetPath: string ) => boolean) | RegExp | undefined => {
 
   if ( Array.isArray ( ignore ) || typeof ignore === 'string' ) {
 
-    return globsCompile ( castArray ( ignore ) );
+    const fn = globsCompile ( castArray ( ignore ) );
+
+    return ( targetPath: string ) => fn ( rootPath, targetPath );
 
   } else {
 
