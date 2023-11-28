@@ -133,13 +133,14 @@ const globCompile = ( glob: string ): (( rootPath: string, targetPath: string ) 
 
   }
 
-  const simpleGroupRe = /^\*\*\/(\*)?\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}$/;
+  const simpleGroupRe = /^\*\*\/(\*)?([ a-zA-Z0-9._-]*)\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}$/;
   const simpleGroupMatch = glob.match ( simpleGroupRe );
 
   if ( simpleGroupMatch ) {
 
     const fullWidth = !simpleGroupMatch[1];
-    const extensions = simpleGroupMatch[2].split ( ',' );
+    const prefix = simpleGroupMatch[2];
+    const extensions = simpleGroupMatch[3].split ( ',' ).map ( extension => `${prefix}${extension}` );
 
     return ( rootPath, targetPath ) => extensions.some ( extension => targetPath.endsWith ( extension ) && ( !fullWidth || ( ( targetPath.length === extension.length ) || isPathSep ( targetPath[targetPath.length - extension.length - 1] ) ) ) );
 
