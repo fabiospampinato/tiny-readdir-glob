@@ -121,25 +121,27 @@ const globCompile = ( glob: string ): (( rootPath: string, targetPath: string ) 
 
   }
 
-  const simpleRe = /^\*\*\/\*(\.[ a-zA-Z0-9._-]+)$/;
+  const simpleRe = /^\*\*\/(\*)?([ a-zA-Z0-9._-]+)$/;
   const simpleMatch = glob.match ( simpleRe );
 
   if ( simpleMatch ) {
 
-    const extension = simpleMatch[1];
+    const fullWidth = !simpleMatch[1];
+    const extension = simpleMatch[2];
 
-    return ( rootPath, targetPath ) => targetPath.endsWith ( extension );
+    return ( rootPath, targetPath ) => targetPath.endsWith ( extension ) && ( !fullWidth || ( ( targetPath.length === extension.length ) || isPathSep ( targetPath[targetPath.length - extension.length - 1] ) ) );
 
   }
 
-  const simpleGroupRe = /^\*\*\/\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}$/;
+  const simpleGroupRe = /^\*\*\/(\*)?\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}$/;
   const simpleGroupMatch = glob.match ( simpleGroupRe );
 
   if ( simpleGroupMatch ) {
 
-    const extensions = simpleGroupMatch[1].split ( ',' );
+    const fullWidth = !simpleGroupMatch[1];
+    const extensions = simpleGroupMatch[2].split ( ',' );
 
-    return ( rootPath, targetPath ) => extensions.some ( extension => targetPath.endsWith ( extension ) );
+    return ( rootPath, targetPath ) => extensions.some ( extension => targetPath.endsWith ( extension ) && ( !fullWidth || ( ( targetPath.length === extension.length ) || isPathSep ( targetPath[targetPath.length - extension.length - 1] ) ) ) );
 
   }
 
@@ -173,6 +175,12 @@ const ignoreCompile = ( rootPath: string, ignore?: (( targetPath: string ) => bo
 
 };
 
+const isPathSep = ( char: string ): boolean => {
+
+  return char === '/' || char === '\\';
+
+};
+
 const uniq = <T> ( values: T[] ): T[] => {
 
   return Array.from ( new Set ( values ) );
@@ -189,4 +197,4 @@ const uniqFlat = <T> ( values: T[][] ): T[] => {
 
 /* EXPORT */
 
-export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, uniq, uniqFlat};
+export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, isPathSep, uniq, uniqFlat};
