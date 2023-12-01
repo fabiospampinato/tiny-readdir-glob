@@ -24,7 +24,7 @@
     "glob"
   ],
   "dependencies": {
-    "tiny-readdir": "^2.2.1",
+    "tiny-readdir": "^2.3.0",
     "zeptomatch": "^1.2.2"
   },
   "devDependencies": {

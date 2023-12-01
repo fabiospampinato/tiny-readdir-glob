@@ -31,6 +31,10 @@ console.log ( result.directoriesFound ); // => Array of absolute paths pointing 
 console.log ( result.filesFound ); // => Array of absolute paths pointing to files, not fully filtered by the provided glob yet
 console.log ( result.symlinksFound ); // => Array of absolute paths pointing to symlinks, not fully filtered by the provided glob yet
 
+console.log ( result.directoriesFoundNames ); // => Set of directories names found
+console.log ( result.filesFoundNames ); // => Set of files name found
+console.log ( result.symlinksFoundNames ); // => Set of symlinks names found
+
 setTimeout ( () => aborter.abort (), 10000 ); // Aborting if it's going to take longer than 10s
 ```
 

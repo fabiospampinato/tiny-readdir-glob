@@ -18,7 +18,10 @@ type Result = {
   /* FOUND */
   directoriesFound: string[],
   filesFound: string[],
-  symlinksFound: string[]
+  symlinksFound: string[],
+  directoriesFoundNames: Set<string>,
+  filesFoundNames: Set<string>,
+  symlinksFoundNames: Set<string>
 };
 
 /* EXPORT */

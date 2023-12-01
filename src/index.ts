@@ -4,7 +4,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import readdir from 'tiny-readdir';
-import {castArray, globsExplode, globsCompile, ignoreCompile, uniqFlat} from './utils';
+import {castArray, globsExplode, globsCompile, ignoreCompile, intersection, uniqFlat} from './utils';
 import type {Options, Result} from './types';
 
 /* MAIN */
@@ -21,6 +21,10 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
   const bucketDirectoriesFound: string[][] = [];
   const bucketFilesFound: string[][] = [];
   const bucketSymlinksFound: string[][] = [];
+
+  const bucketDirectoriesFoundNames: Set<string>[] = [];
+  const bucketFilesFoundNames: Set<string>[] = [];
+  const bucketSymlinksFoundNames: Set<string>[] = [];
 
   for ( const [folders, foldersGlobs] of globsExplode ( globs ) ) {
 
@@ -48,6 +52,10 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
       bucketFilesFound.push ( result.files );
       bucketSymlinksFound.push ( result.symlinks );
 
+      bucketDirectoriesFoundNames.push ( result.directoriesNames );
+      bucketFilesFoundNames.push ( result.filesNames );
+      bucketSymlinksFoundNames.push ( result.symlinksNames );
+
     }
 
   }
@@ -60,7 +68,11 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
   const filesFound = uniqFlat ( bucketFilesFound );
   const symlinksFound = uniqFlat ( bucketSymlinksFound );
 
-  return { directories, files, symlinks, directoriesFound, filesFound, symlinksFound };
+  const directoriesFoundNames = intersection ( bucketDirectoriesFoundNames );
+  const filesFoundNames = intersection ( bucketFilesFoundNames );
+  const symlinksFoundNames = intersection ( bucketSymlinksFoundNames );
+
+  return { directories, files, symlinks, directoriesFound, filesFound, symlinksFound, directoriesFoundNames, filesFoundNames, symlinksFoundNames };
 
 };
 

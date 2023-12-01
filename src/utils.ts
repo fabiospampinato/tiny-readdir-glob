@@ -176,6 +176,28 @@ const ignoreCompile = ( rootPath: string, ignore?: (( targetPath: string ) => bo
 
 };
 
+const intersection = <T> ( sets: Set<T>[] ): Set<T> => {
+
+  if ( sets.length === 1 ) return sets[0];
+
+  const result = new Set<T> ();
+
+  for ( let i = 0, l = sets.length; i < l; i++ ) {
+
+    const set = sets[i];
+
+    for ( const value of set ) {
+
+      result.add ( value );
+
+    }
+
+  }
+
+  return result;
+
+};
+
 const isPathSep = ( char: string ): boolean => {
 
   return char === '/' || char === '\\';
@@ -198,4 +220,4 @@ const uniqFlat = <T> ( values: T[][] ): T[] => {
 
 /* EXPORT */
 
-export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, isPathSep, uniq, uniqFlat};
+export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, uniq, uniqFlat};
