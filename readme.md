@@ -35,6 +35,10 @@ console.log ( result.directoriesFoundNames ); // => Set of directories names fou
 console.log ( result.filesFoundNames ); // => Set of files name found
 console.log ( result.symlinksFoundNames ); // => Set of symlinks names found
 
+console.log ( result.directoriesFoundNamesToPaths ); // => Record of directories names found to their paths
+console.log ( result.filesFoundNamesToPaths ); // => Record of files name found to their paths
+console.log ( result.symlinksFoundNamesToPaths ); // => Record of symlinks names found to their paths
+
 setTimeout ( () => aborter.abort (), 10000 ); // Aborting if it's going to take longer than 10s
 ```
 

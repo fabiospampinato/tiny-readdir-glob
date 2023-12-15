@@ -206,6 +206,8 @@ const isPathSep = ( char: string ): boolean => {
 
 const uniq = <T> ( values: T[] ): T[] => {
 
+  if ( values.length < 2 ) return values;
+
   return Array.from ( new Set ( values ) );
 
 };
@@ -218,6 +220,37 @@ const uniqFlat = <T> ( values: T[][] ): T[] => {
 
 };
 
+const uniqMergeConcat = <T> ( values: Record<string, T[]>[] ): Record<string, T[]> => {
+
+  if ( values.length === 1 ) return values[0];
+
+  const merged: Record<string, T[]> = {};
+
+  for ( let i = 0, l = values.length; i < l; i++ ) {
+
+    const value = values[i];
+
+    for ( const key in value ) {
+
+      const prev = merged[key];
+      const next = prev ? prev.concat ( value[key] ) : value[key];
+
+      merged[key] = next;
+
+    }
+
+  }
+
+  for ( const key in merged ) {
+
+    merged[key] = uniq ( merged[key] );
+
+  }
+
+  return merged;
+
+};
+
 /* EXPORT */
 
-export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, uniq, uniqFlat};
+export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, uniq, uniqFlat, uniqMergeConcat};

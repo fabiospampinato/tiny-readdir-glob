@@ -47,7 +47,13 @@ describe ( 'Tiny Readdir Glob', it => {
         symlinks: [],
         filesFound: [file1aPath, file1bPath, file2Path, fileDeep1Path],
         directoriesFound: [folder1Path, folder2Path, folder1DeepPath, root2Path],
-        symlinksFound: [symlink1FromPath, symlink2FromPath]
+        symlinksFound: [symlink1FromPath, symlink2FromPath],
+        directoriesFoundNames: new Set ([ 'folder1', 'folder2', 'deep', 'root2' ]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file1b.txt', 'file2.txt', 'file1.js' ]),
+        symlinksFoundNames: new Set ([ 'symlink' ]),
+        directoriesFoundNamesToPaths: { folder1: [folder1Path], folder2: [folder2Path], deep: [folder1DeepPath], root2: [root2Path] },
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file1b.txt': [file1bPath], 'file2.txt': [file2Path], 'file1.js': [fileDeep1Path] },
+        symlinksFoundNamesToPaths: { symlink: [symlink1FromPath, symlink2FromPath] }
       };
 
       const result1 = await readdir ( '**/*.txt', { cwd: root1Path, followSymlinks: true } );
@@ -60,7 +66,13 @@ describe ( 'Tiny Readdir Glob', it => {
         symlinks: [],
         filesFound: [file1aPath, file1bPath, fileDeep1Path, file2Path],
         directoriesFound: [folder1DeepPath],
-        symlinksFound: []
+        symlinksFound: [],
+        directoriesFoundNames: new Set ([ 'deep' ]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file1b.txt', 'file1.js', 'file2.txt' ]),
+        symlinksFoundNames: new Set ([]),
+        directoriesFoundNamesToPaths: { deep: [folder1DeepPath] },
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file1b.txt': [file1bPath], 'file1.js': [fileDeep1Path], 'file2.txt': [file2Path] },
+        symlinksFoundNamesToPaths: {}
       };
 
       const result2a = await readdir ( ['folder1/**/*.txt', 'folder2/**/*.txt'], { cwd: root1Path, followSymlinks: true } );
@@ -78,6 +90,12 @@ describe ( 'Tiny Readdir Glob', it => {
         filesFound: [file1aPath, file1bPath, file2Path, fileDeep1Path],
         directoriesFound: [folder1Path, folder2Path, folder1DeepPath, root2Path],
         symlinksFound: [symlink1FromPath, symlink2FromPath],
+        directoriesFoundNames: new Set ([ 'folder1', 'folder2', 'deep', 'root2' ]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file1b.txt', 'file2.txt', 'file1.js' ]),
+        symlinksFoundNames: new Set ([ 'symlink' ]),
+        directoriesFoundNamesToPaths: { folder1: [folder1Path], folder2: [folder2Path], deep: [folder1DeepPath], root2: [root2Path] },
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file1b.txt': [file1bPath], 'file2.txt': [file2Path], 'file1.js': [fileDeep1Path] },
+        symlinksFoundNamesToPaths: { symlink: [symlink1FromPath, symlink2FromPath] }
       };
 
       const result3 = await readdir ( '**/*.js', { cwd: root1Path, followSymlinks: true } );
@@ -90,7 +108,13 @@ describe ( 'Tiny Readdir Glob', it => {
         symlinks: [],
         filesFound: [file1aPath, file1bPath, fileDeep1Path, file2Path],
         directoriesFound: [folder1DeepPath],
-        symlinksFound: []
+        symlinksFound: [],
+        directoriesFoundNames: new Set ([ 'deep' ]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file1b.txt', 'file1.js', 'file2.txt' ]),
+        symlinksFoundNames: new Set ([]),
+        directoriesFoundNamesToPaths: { deep: [folder1DeepPath] },
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file1b.txt': [file1bPath], 'file1.js': [fileDeep1Path], 'file2.txt': [file2Path] },
+        symlinksFoundNamesToPaths: {}
       };
 
       const result4a = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js'], { cwd: root1Path, followSymlinks: true } );
