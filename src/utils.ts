@@ -233,7 +233,7 @@ const uniqMergeConcat = <T> ( values: Record<string, T[]>[] ): Record<string, T[
     for ( const key in value ) {
 
       const prev = merged[key];
-      const next = prev ? prev.concat ( value[key] ) : value[key];
+      const next = Array.isArray ( prev ) ? prev.concat ( value[key] ) : value[key];
 
       merged[key] = next;
 
