@@ -92,3 +92,4 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
 /* EXPORT */
 
 export default readdirGlob;
+export type {Dirent, Options, Result};
