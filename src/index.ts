@@ -5,7 +5,7 @@ import path from 'node:path';
 import process from 'node:process';
 import readdir from 'tiny-readdir';
 import {castArray, globsExplode, globsCompile, ignoreCompile, intersection, uniqFlat, uniqMergeConcat} from './utils';
-import type {Options, Result} from './types';
+import type {Dirent, Options, Result} from './types';
 
 /* MAIN */
 
@@ -45,7 +45,8 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
         limit: options?.limit,
         followSymlinks: options?.followSymlinks,
         ignore: isIgnored,
-        signal: options?.signal
+        signal: options?.signal,
+        onDirents: options?.onDirents
       });
 
       bucketDirectories.push ( result.directories.filter ( isRelativeMatch ) );

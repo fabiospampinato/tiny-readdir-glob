@@ -1,4 +1,8 @@
 
+/* IMPORT */
+
+import type {Dirent} from 'tiny-readdir';
+
 /* MAIN */
 
 type Options = {
@@ -7,7 +11,8 @@ type Options = {
   limit?: number,
   followSymlinks?: boolean,
   ignore?: (( targetPath: string ) => boolean) | RegExp | string | string[],
-  signal?: { aborted: boolean }
+  signal?: { aborted: boolean },
+  onDirents?: ( dirents: Dirent[] ) => Promise<undefined> | undefined
 };
 
 type Result = {
@@ -29,4 +34,4 @@ type Result = {
 
 /* EXPORT */
 
-export type {Options, Result};
+export type {Dirent, Options, Result};

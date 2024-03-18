@@ -20,7 +20,8 @@ const result = await readdir ( ['src/**/*.js'], {
   limit: 1_000_000, // Maximum number of files explored, useful as a stop gap in some edge cases
   followSymlinks: true, // Whether to follow symlinks or not
   ignore: ['**/.git', '**/node_modules'], // Globs, or raw function, that if returns true will ignore this particular file or a directory and its descendants
-  signal: aborter.signal // Optional abort signal, useful for aborting potentially expensive operations
+  signal: aborter.signal, // Optional abort signal, useful for aborting potentially expensive operations
+  onDirents: dirents => console.log ( dirents ) // Optional callback that will be called as soon as new dirents are available, useful for example for discovering ".gitignore" files while searching
 });
 
 console.log ( result.directories ); // => Array of absolute paths pointing to directories, filtered by the provided glob
