@@ -3,6 +3,12 @@
 
 import type {Dirent} from 'tiny-readdir';
 
+/* HELPERS */
+
+type ArrayMaybe<T> = T[] | T;
+
+type PromiseMaybe<T> = Promise<T> | T;
+
 /* MAIN */
 
 type Options = {
@@ -10,9 +16,9 @@ type Options = {
   depth?: number,
   limit?: number,
   followSymlinks?: boolean,
-  ignore?: (( targetPath: string ) => boolean) | RegExp | string | string[],
+  ignore?: ArrayMaybe<(( targetPath: string ) => boolean) | RegExp | string>,
   signal?: { aborted: boolean },
-  onDirents?: ( dirents: Dirent[] ) => Promise<undefined> | undefined
+  onDirents?: ( dirents: Dirent[] ) => PromiseMaybe<undefined>
 };
 
 type Result = {
@@ -34,4 +40,4 @@ type Result = {
 
 /* EXPORT */
 
-export type {Dirent, Options, Result};
+export type {ArrayMaybe, PromiseMaybe, Dirent, Options, Result};

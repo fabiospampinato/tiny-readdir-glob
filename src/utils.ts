@@ -3,6 +3,7 @@
 
 import path from 'node:path';
 import zeptomatch from 'zeptomatch';
+import type {ArrayMaybe} from './types';
 
 /* MAIN */
 
@@ -160,19 +161,19 @@ const globsCompile = ( globs: string[] ): (( rootPath: string, targetPath: strin
 
 };
 
-const ignoreCompile = ( rootPath: string, ignore?: (( targetPath: string ) => boolean) | RegExp | string | string[] ): (( targetPath: string ) => boolean) | RegExp | undefined => {
+const ignoreCompile = ( rootPath: string, ignore?: ArrayMaybe<(( targetPath: string ) => boolean) | RegExp | string> ): ArrayMaybe<(( targetPath: string ) => boolean) | RegExp> | undefined => {
 
-  if ( Array.isArray ( ignore ) || typeof ignore === 'string' ) {
+  if ( !ignore ) return;
 
-    const fn = globsCompile ( castArray ( ignore ) );
+  return castArray ( ignore ).map ( ignore => {
+
+    if ( !isString ( ignore ) ) return ignore;
+
+    const fn = globCompile ( ignore );
 
     return ( targetPath: string ) => fn ( rootPath, targetPath );
 
-  } else {
-
-    return ignore;
-
-  }
+  });
 
 };
 
@@ -201,6 +202,12 @@ const intersection = <T> ( sets: Set<T>[] ): Set<T> => {
 const isPathSep = ( char: string ): boolean => {
 
   return char === '/' || char === '\\';
+
+};
+
+const isString = ( value: unknown ): value is string => {
+
+  return typeof value === 'string';
 
 };
 
@@ -253,4 +260,4 @@ const uniqMergeConcat = <T> ( values: Record<string, T[]>[] ): Record<string, T[
 
 /* EXPORT */
 
-export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, uniq, uniqFlat, uniqMergeConcat};
+export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};
