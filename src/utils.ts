@@ -3,11 +3,10 @@
 
 import path from 'node:path';
 import zeptomatch from 'zeptomatch';
+import {explodeStart, explodeEnd} from 'zeptomatch-explode';
 import type {ArrayMaybe} from './types';
 
 /* MAIN */
-
-//TODO: Maybe promote some of these to standalone reusable packages
 
 const castArray = <T> ( value: T | T[] ): T[] => {
 
@@ -15,68 +14,11 @@ const castArray = <T> ( value: T | T[] ): T[] => {
 
 };
 
-const globIsStatic = ( glob: string ): boolean => { //TODO: Make this perfect, grammar-based, rather than letting some glob-looking paths slip through
+const globExplode = ( glob: string ): [paths: string[], glob: string] => {
 
-  return /^(?:\\.|[ a-zA-Z0-9/._-])*$/.test ( glob );
+  const {statics, dynamic} = explodeStart ( glob );
 
-};
-
-const globUnescape = ( glob: string ): string => {
-
-  return glob.replace ( /\\?(.)/g, '$1' );
-
-};
-
-const globExplode = ( glob: string ): [paths: string[], glob: string] => { //TODO: Account for more things, like classes and ranges
-
-  if ( glob && globIsStatic ( glob ) ) {
-
-    return [[globUnescape(glob)], ''];
-
-  }
-
-  let roots: string[] = [];
-  let remainder = glob;
-
-  while ( true ) {
-
-    const groupRe = /^(\/?)\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}((?:\/|(?=$)))/;
-    const groupMatch = remainder.match ( groupRe );
-
-    if ( groupMatch ) {
-
-      const options = groupMatch[2].split ( ',' ).map ( option => `${groupMatch[1]}${option}${groupMatch[3]}` );
-
-      roots = roots.length ? roots.flatMap ( folder => options.map ( option => `${folder}${option}` ) ) : options;
-      remainder = remainder.slice ( groupMatch[0].length );
-
-      continue;
-
-    }
-
-    const simpleRe = /^(\/?[ a-zA-Z0-9._-]*(?:\/|(?=$)))/;
-    const simpleMatch = remainder.match ( simpleRe );
-
-    if ( simpleMatch && simpleMatch[0].length ) {
-
-      roots = roots.length ? roots.map ( folder => `${folder}${simpleMatch[0]}` ) : [simpleMatch[0]];
-      remainder = remainder.slice ( simpleMatch[0].length );
-
-      continue;
-
-    }
-
-    break;
-
-  }
-
-  if ( !roots.length ) {
-
-    roots.push ( '' );
-
-  }
-
-  return [roots, remainder];
+  return [statics, dynamic];
 
 };
 
@@ -87,6 +29,12 @@ const globsExplode = ( globs: string[] ): [paths: string[], globs: string[]][] =
   for ( const glob of globs ) {
 
     const [paths, pathsGlob] = globExplode ( glob );
+
+    if ( !paths.length ) {
+
+      paths.push ( '' );
+
+    }
 
     for ( const path of paths ) {
 
@@ -114,42 +62,49 @@ const globsExplode = ( globs: string[] ): [paths: string[], globs: string[]][] =
 
 };
 
-const globCompile = ( glob: string ): (( rootPath: string, targetPath: string ) => boolean) => {
+const globCompile = ( glob: string ): (( rootPath: string, targetPath: string ) => boolean) => { //TODO: Optimize this more, accounting for more scenarios
 
-  if ( !glob || glob === '**/*' ) {
+  if ( !glob || glob === '**/*' ) { // Trivial case
 
     return () => true;
 
   }
 
-  const simpleRe = /^\*\*\/(\*)?([ a-zA-Z0-9._-]+)$/;
-  const simpleMatch = glob.match ( simpleRe );
+  const {flexibleStart, flexibleEnd, statics, dynamic} = explodeEnd ( glob );
 
-  if ( simpleMatch ) {
+  if ( dynamic === '**/*' && statics.length && !flexibleEnd ) { // Optimized case
 
-    const fullWidth = !simpleMatch[1];
-    const extension = simpleMatch[2];
+    return ( rootPath: string, targetPath: string ): boolean => {
 
-    return ( rootPath, targetPath ) => targetPath.endsWith ( extension ) && ( !fullWidth || ( ( targetPath.length === extension.length ) || isPathSep ( targetPath[targetPath.length - extension.length - 1] ) ) );
+      for ( let i = 0, l = statics.length; i < l; i++ ) {
+
+        const end = statics[i];
+
+        if ( !targetPath.endsWith ( end ) ) continue;
+
+        if ( flexibleStart ) return true;
+
+        if ( targetPath.length === end.length ) return true;
+
+        if ( isPathSep ( targetPath[targetPath.length - end.length - 1 ] ) ) return true;
+
+      }
+
+      return false;
+
+    };
+
+  } else { // Unoptimized case
+
+    const re = zeptomatch.compile ( glob );
+
+    return ( rootPath: string, targetPath: string ): boolean => {
+
+      return re.test ( path.relative ( rootPath, targetPath ) );
+
+    };
 
   }
-
-  const simpleGroupRe = /^\*\*\/(\*)?([ a-zA-Z0-9._-]*)\{([ a-zA-Z0-9._-]+(?:,[ a-zA-Z0-9._-]+)*)\}$/;
-  const simpleGroupMatch = glob.match ( simpleGroupRe );
-
-  if ( simpleGroupMatch ) {
-
-    const fullWidth = !simpleGroupMatch[1];
-    const prefix = simpleGroupMatch[2];
-    const extensions = simpleGroupMatch[3].split ( ',' ).map ( extension => `${prefix}${extension}` );
-
-    return ( rootPath, targetPath ) => extensions.some ( extension => targetPath.endsWith ( extension ) && ( !fullWidth || ( ( targetPath.length === extension.length ) || isPathSep ( targetPath[targetPath.length - extension.length - 1] ) ) ) );
-
-  }
-
-  const re = zeptomatch.compile ( glob );
-
-  return ( rootPath, targetPath ) => re.test ( path.relative ( rootPath, targetPath ) );
 
 };
 
@@ -260,4 +215,4 @@ const uniqMergeConcat = <T> ( values: Record<string, T[]>[] ): Record<string, T[
 
 /* EXPORT */
 
-export {castArray, globIsStatic, globUnescape, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};
+export {castArray, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};

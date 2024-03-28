@@ -25,7 +25,8 @@
   ],
   "dependencies": {
     "tiny-readdir": "^2.7.0",
-    "zeptomatch": "^1.2.2"
+    "zeptomatch": "^1.2.2",
+    "zeptomatch-explode": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.9.4",
