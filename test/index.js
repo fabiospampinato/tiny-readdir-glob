@@ -125,6 +125,10 @@ describe ( 'Tiny Readdir Glob', it => {
       t.deepEqual ( result4b, expected4 );
       t.deepEqual ( result4c, expected4 );
 
+      const result5 = await readdir ( '.', { cwd: root1Path, followSymlinks: true } );
+
+      t.is ( result5.files.length, 4 );
+
     } finally {
 
       fs.rmSync ( root1Path, { recursive: true } );

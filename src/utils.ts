@@ -4,6 +4,8 @@
 import path from 'node:path';
 import zeptomatch from 'zeptomatch';
 import {explodeStart, explodeEnd} from 'zeptomatch-explode';
+import isStatic from 'zeptomatch-is-static';
+import unescape from 'zeptomatch-unescape';
 import type {ArrayMaybe} from './types';
 
 /* MAIN */
@@ -16,9 +18,17 @@ const castArray = <T> ( value: T | T[] ): T[] => {
 
 const globExplode = ( glob: string ): [paths: string[], glob: string] => {
 
-  const {statics, dynamic} = explodeStart ( glob );
+  if ( isStatic ( glob ) ) { // Handling it as a relative path, not a glob
 
-  return [statics, dynamic];
+    return [[unescape ( glob )], '**/*'];
+
+  } else { // Handling it as an actual glob
+
+    const {statics, dynamic} = explodeStart ( glob );
+
+    return [statics, dynamic];
+
+  }
 
 };
 
