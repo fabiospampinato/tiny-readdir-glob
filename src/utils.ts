@@ -6,7 +6,7 @@ import zeptomatch from 'zeptomatch';
 import {explodeStart, explodeEnd} from 'zeptomatch-explode';
 import isStatic from 'zeptomatch-is-static';
 import unescape from 'zeptomatch-unescape';
-import type {ArrayMaybe} from './types';
+import type {ArrayMaybe, Options} from './types';
 
 /* MAIN */
 
@@ -142,6 +142,41 @@ const ignoreCompile = ( rootPath: string, ignore?: ArrayMaybe<(( targetPath: str
 
 };
 
+/** 
+ * Filters out negated glob patterns and adds them to `options.ignore` as a side effect.\
+ * E.g. `handleNegatedGlobs ( ['*.js', '!no-match.js'], {} )` returns `['*.js']`, and\
+ * `options.ignore` becomes `['no-match.js']`.
+ */
+const handleNegatedGlobs = ( globs: string[], options?: Options ): string[] => {
+  const ignoresToAdd: string[] = [];
+  const filteredGlobs = globs.filter(glob => {
+    if ( !glob.startsWith ('!') ) {
+      return true;
+    }
+
+    ignoresToAdd.push ( glob.slice(1) );
+    return false;
+  })
+
+  if ( !ignoresToAdd.length ) {
+    return filteredGlobs;
+  }
+
+  if ( options ) {
+    if ( !options.ignore ) {
+      options.ignore = ignoresToAdd;
+    } else {
+      const newIgnores = castArray ( options.ignore );
+      newIgnores.push ( ...ignoresToAdd );
+      options.ignore = newIgnores;
+    }
+  } else {
+    options = { ignore: ignoresToAdd };
+  }
+
+  return filteredGlobs;
+}
+
 const intersection = <T> ( sets: Set<T>[] ): Set<T> => {
 
   if ( sets.length === 1 ) return sets[0];
@@ -225,4 +260,4 @@ const uniqMergeConcat = <T> ( values: Record<string, T[]>[] ): Record<string, T[
 
 /* EXPORT */
 
-export {castArray, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};
+export {castArray, globExplode, globsExplode, globCompile, globsCompile, handleNegatedGlobs, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};

@@ -4,14 +4,14 @@
 import path from 'node:path';
 import process from 'node:process';
 import readdir from 'tiny-readdir';
-import {castArray, globsExplode, globsCompile, ignoreCompile, intersection, uniqFlat, uniqMergeConcat} from './utils';
+import {castArray, globsExplode, globsCompile, handleNegatedGlobs, ignoreCompile, intersection, uniqFlat, uniqMergeConcat} from './utils';
 import type {Dirent, Options, Result} from './types';
 
 /* MAIN */
 
 const readdirGlob = async ( glob: string | string[], options?: Options ): Promise<Result> => {
 
-  const globs = castArray ( glob );
+  const globs = handleNegatedGlobs ( castArray ( glob ), options );
   const cwd = options?.cwd ?? process.cwd ();
 
   const bucketDirectories: string[][] = [];
