@@ -9,9 +9,9 @@ import type {Dirent, Options, Result} from './types';
 
 /* MAIN */
 
-const readdirGlob = async ( glob: string | string[], options?: Options ): Promise<Result> => {
+const readdirGlob = async ( glob: string | string[], opts?: Options ): Promise<Result> => {
 
-  const globs = handleNegatedGlobs ( castArray ( glob ), options );
+  const { filteredGlobs: globs, options } = handleNegatedGlobs ( castArray ( glob ), opts );
   const cwd = options?.cwd ?? process.cwd ();
 
   const bucketDirectories: string[][] = [];

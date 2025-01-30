@@ -143,13 +143,13 @@ const ignoreCompile = ( rootPath: string, ignore?: ArrayMaybe<(( targetPath: str
 };
 
 /** 
- * Filters out negated glob patterns and adds them to `options.ignore` as a side effect.\
+ * Filters out negated glob patterns and adds them to `options.ignore`.\
  * E.g. `handleNegatedGlobs ( ['*.js', '!no-match.js'], {} )` returns `['*.js']`, and\
  * `options.ignore` becomes `['no-match.js']`.
  */
-const handleNegatedGlobs = ( globs: string[], options?: Options ): string[] => {
+const handleNegatedGlobs = ( globs: string[], options?: Options ): { filteredGlobs: string[], options?: Options } => {
   const ignoresToAdd: string[] = [];
-  const filteredGlobs = globs.filter(glob => {
+  const filteredGlobs = globs.filter ( glob => {
     if ( !glob.startsWith ('!') ) {
       return true;
     }
@@ -159,7 +159,7 @@ const handleNegatedGlobs = ( globs: string[], options?: Options ): string[] => {
   })
 
   if ( !ignoresToAdd.length ) {
-    return filteredGlobs;
+    return { filteredGlobs, options };
   }
 
   if ( options ) {
@@ -174,7 +174,7 @@ const handleNegatedGlobs = ( globs: string[], options?: Options ): string[] => {
     options = { ignore: ignoresToAdd };
   }
 
-  return filteredGlobs;
+  return { filteredGlobs, options };
 }
 
 const intersection = <T> ( sets: Set<T>[] ): Set<T> => {
