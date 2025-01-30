@@ -129,6 +129,27 @@ describe ( 'Tiny Readdir Glob', it => {
 
       t.is ( result5.files.length, 4 );
 
+      const expected6 = {
+        files: [],
+        directories: [],
+        symlinks: [],
+        filesFound: [file1aPath, file2Path],
+        directoriesFound: [],
+        symlinksFound: [],
+        directoriesFoundNames: new Set ([]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file2.txt' ]),
+        symlinksFoundNames: new Set ([]),
+        directoriesFoundNamesToPaths: {},
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file2.txt': [file2Path] },
+        symlinksFoundNamesToPaths: {}
+      };
+
+      const result6a = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**'], { cwd: root1Path, followSymlinks: true, ignore: 'file1b.txt' } );
+      const result6b = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**', '!file1b.txt'], { cwd: root1Path, followSymlinks: true } );
+      
+      t.deepEqual ( result6a, expected6 );
+      t.deepEqual ( result6b, expected6 );
+
     } finally {
 
       fs.rmSync ( root1Path, { recursive: true } );
