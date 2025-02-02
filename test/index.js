@@ -151,6 +151,25 @@ describe ( 'Tiny Readdir Glob', it => {
       t.deepEqual ( result6a, expected6 );
       t.deepEqual ( result6b, expected6 );
       t.deepEqual ( result6c, expected6 );
+
+      const expected7 = {
+        files: [file1aPath, file1bPath, file2Path],
+        directories: [folder1Path, folder2Path, root2Path],
+        symlinks: [symlink1FromPath, symlink2FromPath],
+        filesFound: [file1aPath, file1bPath, file2Path],
+        directoriesFound: [folder1Path, folder2Path, root2Path],
+        symlinksFound: [symlink1FromPath, symlink2FromPath],
+        directoriesFoundNames: new Set ([ 'folder1', 'folder2', 'root2' ]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file1b.txt', 'file2.txt' ]),
+        symlinksFoundNames: new Set ([ 'symlink' ]),
+        directoriesFoundNamesToPaths: { folder1: [folder1Path], folder2: [folder2Path], root2: [root2Path] },
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file1b.txt': [file1bPath], 'file2.txt': [file2Path] },
+        symlinksFoundNamesToPaths: { symlink: [symlink1FromPath, symlink2FromPath] }
+      };
+
+      const result7 = await readdir ( ['!**/deep/**'], { cwd: root1Path, followSymlinks: true } );
+
+      t.deepEqual ( result7, expected7 );
       
     } finally {
 

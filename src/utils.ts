@@ -168,6 +168,12 @@ const handleNegatedGlobs = ( globs: string[], options?: Options ): { filteredGlo
     return { filteredGlobs, options };
   }
 
+  // If there are no "positive" globs but some negated ones, we want to implicitly add "**" to
+  // match everything but the negated patterns.
+  if ( !filteredGlobs.length ) {
+    filteredGlobs.push("**");
+  }
+
   if ( options ) {
     if ( !options.ignore ) {
       options.ignore = ignoresToAdd;
