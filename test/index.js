@@ -146,10 +146,12 @@ describe ( 'Tiny Readdir Glob', it => {
 
       const result6a = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**'], { cwd: root1Path, followSymlinks: true, ignore: 'file1b.txt' } );
       const result6b = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**', '!file1b.txt'], { cwd: root1Path, followSymlinks: true } );
-      
+      const result6c = await readdir ( ['!!folder1/**/*.js', '!!!!folder2/**/*.js', '!!!**/deep/**', '!!!!!file1b.txt'], { cwd: root1Path, followSymlinks: true })
+
       t.deepEqual ( result6a, expected6 );
       t.deepEqual ( result6b, expected6 );
-
+      t.deepEqual ( result6c, expected6 );
+      
     } finally {
 
       fs.rmSync ( root1Path, { recursive: true } );

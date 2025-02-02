@@ -149,14 +149,20 @@ const ignoreCompile = ( rootPath: string, ignore?: ArrayMaybe<(( targetPath: str
  */
 const handleNegatedGlobs = ( globs: string[], options?: Options ): { filteredGlobs: string[], options?: Options } => {
   const ignoresToAdd: string[] = [];
-  const filteredGlobs = globs.filter ( glob => {
-    if ( !glob.startsWith ('!') ) {
-      return true;
+  const filteredGlobs = globs.reduce<string[]> ( ( filtered, glob ) => {
+    let i = 0;
+    while ( glob[i] === "!" ) {
+      i += 1;
     }
 
-    ignoresToAdd.push ( glob.slice(1) );
-    return false;
-  })
+    if ( i % 2 === 0 ) {
+      filtered.push( glob.slice ( i ) );
+    } else {
+      ignoresToAdd.push( glob.slice ( i ) );
+    }
+
+    return filtered;
+  }, [] );
 
   if ( !ignoresToAdd.length ) {
     return { filteredGlobs, options };
