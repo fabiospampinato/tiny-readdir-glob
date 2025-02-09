@@ -2,7 +2,7 @@
   "name": "tiny-readdir-glob",
   "repository": "github:fabiospampinato/tiny-readdir-glob",
   "description": "A simple promisified recursive readdir function, with support for globs.",
-  "version": "1.22.24",
+  "version": "1.23.0",
   "type": "module",
   "main": "dist/index.js",
   "exports": "./dist/index.js",
