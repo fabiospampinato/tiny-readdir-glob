@@ -4,15 +4,17 @@
 import path from 'node:path';
 import process from 'node:process';
 import readdir from 'tiny-readdir';
-import {castArray, globsExplode, globsCompile, ignoreCompile, intersection, uniqFlat, uniqMergeConcat} from './utils';
+import {castArray, globsExplode, globsCompile, globsPartition, ignoreCompile, intersection, uniqFlat, uniqMergeConcat} from './utils';
 import type {Dirent, Options, Result} from './types';
 
 /* MAIN */
 
 const readdirGlob = async ( glob: string | string[], options?: Options ): Promise<Result> => {
 
-  const globs = castArray ( glob );
+  const [globsPositive, globsNegative] = globsPartition ( castArray ( glob ) );
+
   const cwd = options?.cwd ?? process.cwd ();
+  const ignore = [...castArray ( options?.ignore ?? [] ), ...globsNegative];
 
   const bucketDirectories: string[][] = [];
   const bucketFiles: string[][] = [];
@@ -30,14 +32,14 @@ const readdirGlob = async ( glob: string | string[], options?: Options ): Promis
   const bucketFilesFoundNamesToPaths: Record<string, string[]>[] = [];
   const bucketSymlinksFoundNamesToPaths: Record<string, string[]>[] = [];
 
-  for ( const [folders, foldersGlobs] of globsExplode ( globs ) ) {
+  for ( const [folders, foldersGlobs] of globsExplode ( globsPositive ) ) {
 
     const isMatch = globsCompile ( foldersGlobs );
 
     for ( const folder of folders ) {
 
       const rootPath = path.join ( cwd, folder ).replace ( /\/$/, '' );
-      const isIgnored = ignoreCompile ( rootPath, options?.ignore );
+      const isIgnored = ignoreCompile ( rootPath, ignore );
       const isRelativeMatch = ( targetPath: string ) => isMatch ( rootPath, targetPath );
 
       const result = await readdir ( rootPath, {

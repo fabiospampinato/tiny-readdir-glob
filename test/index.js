@@ -129,6 +129,48 @@ describe ( 'Tiny Readdir Glob', it => {
 
       t.is ( result5.files.length, 4 );
 
+      const expected6 = {
+        files: [],
+        directories: [],
+        symlinks: [],
+        filesFound: [file1aPath, file2Path],
+        directoriesFound: [],
+        symlinksFound: [],
+        directoriesFoundNames: new Set ([]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file2.txt' ]),
+        symlinksFoundNames: new Set ([]),
+        directoriesFoundNamesToPaths: {},
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file2.txt': [file2Path] },
+        symlinksFoundNamesToPaths: {}
+      };
+
+      const result6a = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**'], { cwd: root1Path, followSymlinks: true, ignore: 'file1b.txt' } );
+      const result6b = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**', '!file1b.txt'], { cwd: root1Path, followSymlinks: true } );
+      const result6c = await readdir ( ['!!folder1/**/*.js', '!!!!folder2/**/*.js', '!!!**/deep/**', '!!!!!file1b.txt'], { cwd: root1Path, followSymlinks: true } );
+
+      t.deepEqual ( result6a, expected6 );
+      t.deepEqual ( result6b, expected6 );
+      t.deepEqual ( result6c, expected6 );
+
+      const expected7 = {
+        files: [file1aPath, file1bPath, file2Path],
+        directories: [folder1Path, folder2Path, root2Path],
+        symlinks: [symlink1FromPath, symlink2FromPath],
+        filesFound: [file1aPath, file1bPath, file2Path],
+        directoriesFound: [folder1Path, folder2Path, root2Path],
+        symlinksFound: [symlink1FromPath, symlink2FromPath],
+        directoriesFoundNames: new Set ([ 'folder1', 'folder2', 'root2' ]),
+        filesFoundNames: new Set ([ 'file1a.txt', 'file1b.txt', 'file2.txt' ]),
+        symlinksFoundNames: new Set ([ 'symlink' ]),
+        directoriesFoundNamesToPaths: { folder1: [folder1Path], folder2: [folder2Path], root2: [root2Path] },
+        filesFoundNamesToPaths: { 'file1a.txt': [file1aPath], 'file1b.txt': [file1bPath], 'file2.txt': [file2Path] },
+        symlinksFoundNamesToPaths: { symlink: [symlink1FromPath, symlink2FromPath] }
+      };
+
+      const result7 = await readdir ( ['!**/deep/**'], { cwd: root1Path, followSymlinks: true } );
+
+      t.deepEqual ( result7, expected7 );
+
     } finally {
 
       fs.rmSync ( root1Path, { recursive: true } );

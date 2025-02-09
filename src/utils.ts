@@ -126,6 +126,41 @@ const globsCompile = ( globs: string[] ): (( rootPath: string, targetPath: strin
 
 };
 
+const globsPartition = ( globs: string[] ): [positives: string[], negatives: string[]] => {
+
+  const positives: string[] = [];
+  const negatives: string[] = [];
+  const bangsRe = /^!+/;
+
+  for ( const glob of globs ) {
+
+    const match = glob.match ( bangsRe );
+
+    if ( match ) {
+
+      const bangsNr = match[0].length;
+      const bucket = bangsNr % 2 === 0 ? positives : negatives;
+
+      bucket.push ( glob.slice ( bangsNr ) );
+
+    } else {
+
+      positives.push ( glob );
+
+    }
+
+  }
+
+  if ( !positives.length ) {
+
+    positives.push ( '**' );
+
+  }
+
+  return [positives, negatives];
+
+};
+
 const ignoreCompile = ( rootPath: string, ignore?: ArrayMaybe<(( targetPath: string ) => boolean) | RegExp | string> ): ArrayMaybe<(( targetPath: string ) => boolean) | RegExp> | undefined => {
 
   if ( !ignore ) return;
@@ -225,4 +260,4 @@ const uniqMergeConcat = <T> ( values: Record<string, T[]>[] ): Record<string, T[
 
 /* EXPORT */
 
-export {castArray, globExplode, globsExplode, globCompile, globsCompile, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};
+export {castArray, globExplode, globsExplode, globCompile, globsCompile, globsPartition, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat, uniqMergeConcat};
