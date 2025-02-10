@@ -15,12 +15,17 @@ describe ( 'Tiny Readdir Glob', it => {
     const cwdPath = process.cwd ();
     const root1Path = path.join ( cwdPath, 'test', 'root1' );
     const root2Path = path.join ( cwdPath, 'test', 'root2' );
+    const root3Path = path.join ( cwdPath, 'test', 'root3' );
     const folder1Path = path.join ( root1Path, 'folder1' );
     const folder2Path = path.join ( root1Path, 'folder2' );
+    const folder3Path = path.join ( root3Path, '!!!folder3' )
+    const folder4Path = path.join ( root3Path, '!folder4' );
     const folder1DeepPath = path.join ( folder1Path, 'deep' );
     const file1aPath = path.join ( folder1Path, 'file1a.txt' );
     const file1bPath = path.join ( folder1Path, 'file1b.txt' );
     const file2Path = path.join ( folder2Path, 'file2.txt' );
+    const file3Path = path.join ( folder3Path, 'file3.txt' );
+    const file4Path = path.join ( folder4Path, 'file4.txt' );
     const fileDeep1Path = path.join ( folder1DeepPath, 'file1.js' );
     const symlink1FromPath = path.join ( root1Path, 'symlink' );
     const symlink1ToPath = root2Path;
@@ -29,12 +34,17 @@ describe ( 'Tiny Readdir Glob', it => {
 
     fs.mkdirSync ( root1Path );
     fs.mkdirSync ( root2Path );
+    fs.mkdirSync ( root3Path );
     fs.mkdirSync ( folder1Path );
     fs.mkdirSync ( folder2Path );
+    fs.mkdirSync ( folder3Path );
+    fs.mkdirSync ( folder4Path );
     fs.mkdirSync ( folder1DeepPath );
     fs.writeFileSync ( file1aPath, '' );
     fs.writeFileSync ( file1bPath, '' );
     fs.writeFileSync ( file2Path, '' );
+    fs.writeFileSync ( file3Path, '' );
+    fs.writeFileSync ( file4Path, '' );
     fs.writeFileSync ( fileDeep1Path, '' );
     fs.symlinkSync ( symlink1ToPath, symlink1FromPath );
     fs.symlinkSync ( symlink2ToPath, symlink2FromPath );
@@ -190,10 +200,30 @@ describe ( 'Tiny Readdir Glob', it => {
 
       t.deepEqual ( result8, expected8 );
 
+      const expected9 = {
+        files: [file3Path, file4Path],
+        directories: [folder3Path, folder4Path],
+        symlinks: [],
+        filesFound: [file3Path, file4Path],
+        directoriesFound: [folder3Path, folder4Path],
+        symlinksFound: [],
+        directoriesFoundNames: new Set ([ '!!!folder3', '!folder4' ]),
+        filesFoundNames: new Set ([ 'file3.txt', 'file4.txt' ]),
+        symlinksFoundNames: new Set (),
+        directoriesFoundNamesToPaths: { '!!!folder3': [folder3Path], '!folder4': [folder4Path] },
+        filesFoundNamesToPaths: { 'file3.txt': [file3Path], 'file4.txt': [file4Path] },
+        symlinksFoundNamesToPaths: {}
+      }
+
+      const result9 = await readdir ( ['!!!folder3', '!folder4'], { cwd: root3Path, followSymlinks: true });
+      
+      t.deepEqual ( result9, expected9 );
+
     } finally {
 
       fs.rmSync ( root1Path, { recursive: true } );
       fs.rmSync ( root2Path, { recursive: true } );
+      fs.rmSync ( root3Path, { recursive: true } );
 
     }
 

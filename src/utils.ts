@@ -1,6 +1,7 @@
 
 /* IMPORT */
 
+import fs from 'node:fs';
 import path from 'node:path';
 import zeptomatch from 'zeptomatch';
 import {explodeStart, explodeEnd} from 'zeptomatch-explode';
@@ -135,6 +136,15 @@ const globsPartition = ( globs: string[] ): [positives: string[], negatives: str
   if ( globs.length ) {
 
     for ( const glob of globs ) {
+
+      // File names and directory names can start with exclamation marks. In that case,
+      // we need to treat them literally rather than parsing whether they're negative or not.
+      if ( fs.existsSync ( glob ) ) {
+
+        positives.push ( glob );
+        continue;
+
+      }
 
       const match = glob.match ( bangsRe );
 
