@@ -171,6 +171,25 @@ describe ( 'Tiny Readdir Glob', it => {
 
       t.deepEqual ( result7, expected7 );
 
+      const expected8 = {
+        files: [],
+        directories: [],
+        symlinks: [],
+        filesFound: [],
+        directoriesFound: [],
+        symlinksFound: [],
+        directoriesFoundNames: new Set (),
+        filesFoundNames: new Set (),
+        symlinksFoundNames: new Set (),
+        directoriesFoundNamesToPaths: {},
+        filesFoundNamesToPaths: {},
+        symlinksFoundNamesToPaths: {}
+      };
+
+      const result8 = await readdir ( [], { cwd: root1Path, followSymlinks: true } );
+
+      t.deepEqual ( result8, expected8 );
+
     } finally {
 
       fs.rmSync ( root1Path, { recursive: true } );

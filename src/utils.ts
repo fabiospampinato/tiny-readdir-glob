@@ -132,28 +132,32 @@ const globsPartition = ( globs: string[] ): [positives: string[], negatives: str
   const negatives: string[] = [];
   const bangsRe = /^!+/;
 
-  for ( const glob of globs ) {
+  if ( globs.length ) {
 
-    const match = glob.match ( bangsRe );
+    for ( const glob of globs ) {
 
-    if ( match ) {
+      const match = glob.match ( bangsRe );
 
-      const bangsNr = match[0].length;
-      const bucket = bangsNr % 2 === 0 ? positives : negatives;
+      if ( match ) {
 
-      bucket.push ( glob.slice ( bangsNr ) );
+        const bangsNr = match[0].length;
+        const bucket = bangsNr % 2 === 0 ? positives : negatives;
 
-    } else {
+        bucket.push ( glob.slice ( bangsNr ) );
 
-      positives.push ( glob );
+      } else {
+
+        positives.push ( glob );
+
+      }
 
     }
 
-  }
+    if ( !positives.length ) {
 
-  if ( !positives.length ) {
+      positives.push ( '**' );
 
-    positives.push ( '**' );
+    }
 
   }
 
