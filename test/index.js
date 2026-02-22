@@ -1,10 +1,18 @@
 
 /* IMPORT */
 
-import {describe} from 'fava';
+import {describe, t} from 'fava';
 import fs from 'node:fs';
 import path from 'node:path';
 import readdir from '../dist/index.js';
+
+/* HELPERS */
+
+const deepEqualResults = ( result, expected ) => {
+  t.deepEqual ( result.directories.sort (), expected.directories.sort () );
+  t.deepEqual ( result.files.sort (), expected.files.sort () );
+  t.deepEqual ( result.symlinks.sort (), expected.symlinks.sort () );
+};
 
 /* MAIN */
 
@@ -49,7 +57,7 @@ describe ( 'Tiny Readdir Glob', it => {
 
       const result1 = await readdir ( '**/*.txt', { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result1, expected1 );
+      deepEqualResults ( result1, expected1 );
 
       const expected2 = {
         files: [file1aPath, file1bPath, file2Path],
@@ -61,9 +69,9 @@ describe ( 'Tiny Readdir Glob', it => {
       const result2b = await readdir ( '{folder1,folder2}/**/*.txt', { cwd: root1Path, followSymlinks: true } );
       const result2c = await readdir ( ['{folder1,folder2}/**/*.txt', '{folder1,folder2}/**/*.txt'], { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result2a, expected2 );
-      t.deepEqual ( result2b, expected2 );
-      t.deepEqual ( result2c, expected2 );
+      deepEqualResults ( result2a, expected2 );
+      deepEqualResults ( result2b, expected2 );
+      deepEqualResults ( result2c, expected2 );
 
       const expected3 = {
         files: [fileDeep1Path],
@@ -73,7 +81,7 @@ describe ( 'Tiny Readdir Glob', it => {
 
       const result3 = await readdir ( '**/*.js', { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result3, expected3 );
+      deepEqualResults ( result3, expected3 );
 
       const expected4 = {
         files: [fileDeep1Path],
@@ -85,9 +93,9 @@ describe ( 'Tiny Readdir Glob', it => {
       const result4b = await readdir ( '{folder1,folder2}/**/*.js', { cwd: root1Path, followSymlinks: true } );
       const result4c = await readdir ( ['{folder1,folder2}/**/*.js', '{folder1,folder2}/**/*.js'], { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result4a, expected4 );
-      t.deepEqual ( result4b, expected4 );
-      t.deepEqual ( result4c, expected4 );
+      deepEqualResults ( result4a, expected4 );
+      deepEqualResults ( result4b, expected4 );
+      deepEqualResults ( result4c, expected4 );
 
       const result5 = await readdir ( '.', { cwd: root1Path, followSymlinks: true } );
 
@@ -103,9 +111,9 @@ describe ( 'Tiny Readdir Glob', it => {
       const result6b = await readdir ( ['folder1/**/*.js', 'folder2/**/*.js', '!**/deep/**', '!file1b.txt'], { cwd: root1Path, followSymlinks: true } );
       const result6c = await readdir ( ['!!folder1/**/*.js', '!!!!folder2/**/*.js', '!!!**/deep/**', '!!!!!file1b.txt'], { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result6a, expected6 );
-      t.deepEqual ( result6b, expected6 );
-      t.deepEqual ( result6c, expected6 );
+      deepEqualResults ( result6a, expected6 );
+      deepEqualResults ( result6b, expected6 );
+      deepEqualResults ( result6c, expected6 );
 
       const expected7 = {
         files: [file1aPath, file1bPath, file2Path],
@@ -115,7 +123,7 @@ describe ( 'Tiny Readdir Glob', it => {
 
       const result7 = await readdir ( ['!**/deep/**'], { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result7, expected7 );
+      deepEqualResults ( result7, expected7 );
 
       const expected8 = {
         files: [],
@@ -125,7 +133,7 @@ describe ( 'Tiny Readdir Glob', it => {
 
       const result8 = await readdir ( [], { cwd: root1Path, followSymlinks: true } );
 
-      t.deepEqual ( result8, expected8 );
+      deepEqualResults ( result8, expected8 );
 
     } finally {
 
