@@ -17,15 +17,29 @@ benchmark.config ({
 });
 
 benchmark ({
-  name: 'tiny-readdir',
+  name: 'tiny-readdir (full)',
   fn: async () => {
     await readdir ( '**/*.js', { cwd, followSymlinks: true } );
   }
 });
 
 benchmark ({
-  name: 'fs.glob',
+  name: 'tiny-readdir (partial)',
+  fn: async () => {
+    await readdir ( 'packages/**/src/**/*.js', { cwd, followSymlinks: true } );
+  }
+});
+
+benchmark ({
+  name: 'fs.glob (full)',
   fn: async () => {
     await Array.fromAsync ( fs.glob ( '**/*.js', { cwd } ) );
+  }
+});
+
+benchmark ({
+  name: 'fs.glob (partial)',
+  fn: async () => {
+    await Array.fromAsync ( fs.glob ( 'packages/**/src/**/*.js', { cwd } ) );
   }
 });
