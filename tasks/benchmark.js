@@ -17,14 +17,14 @@ benchmark.config ({
 });
 
 benchmark ({
-  name: 'tiny-readdir (full)',
+  name: 'tiny-readdir-glob (full)',
   fn: async () => {
     await readdir ( '**/*.js', { cwd, followSymlinks: true } );
   }
 });
 
 benchmark ({
-  name: 'tiny-readdir (partial)',
+  name: 'tiny-readdir-glob (partial)',
   fn: async () => {
     await readdir ( 'packages/**/src/**/*.js', { cwd, followSymlinks: true } );
   }
