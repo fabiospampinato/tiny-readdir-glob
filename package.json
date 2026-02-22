@@ -9,6 +9,9 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "benchmark": "tsex benchmark",
+    "benchmark:watch": "tsex benchmark --watch",
+    "benchmark:prepare": "cd tasks && git clone https://github.com/babel/babel.git",
     "clean": "tsex clean",
     "compile": "tsex compile",
     "compile:watch": "tsex compile --watch",
@@ -33,6 +36,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.9.4",
+    "benchloop": "^2.1.1",
     "fava": "^0.3.1",
     "tsex": "^3.0.1",
     "typescript": "^5.3.2"
