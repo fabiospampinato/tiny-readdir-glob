@@ -140,11 +140,11 @@ describe ( 'Tiny Readdir Glob', it => {
 
   });
 
-  it ( 'finds all files with "."', async t => {
+  it ( 'finds all files with "**/*"', async t => {
 
     await withFixtures ( async ({ root1Path }) => {
 
-      const result = await readdir ( '.', { cwd: root1Path, followSymlinks: true } );
+      const result = await readdir ( '**/*', { cwd: root1Path, followSymlinks: true } );
 
       t.is ( result.files.length, 4 );
 

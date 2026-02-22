@@ -2,6 +2,8 @@
 
 A simple promisified recursive readdir function, with support for globs.
 
+Globs are expressed in [`zeptomatch`](https://github.com/fabiospampinato/zeptomatch)'s flavor.
+
 ## Install
 
 ```sh

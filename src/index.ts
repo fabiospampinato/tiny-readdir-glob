@@ -4,58 +4,78 @@
 import path from 'node:path';
 import process from 'node:process';
 import readdir from 'tiny-readdir';
-import {castArray, globsExplode, globsCompile, globsPartition, ignoreCompile, uniqFlat} from './utils';
-import type {Dirent, Options, Result} from './types';
+import zeptomatch from 'zeptomatch';
+import {castArray, getGlobsPartition, isFunction, isRegExp, isString} from './utils';
+import type {Dirent, DirentLike, Options, Result} from './types';
 
 /* MAIN */
 
 const readdirGlob = async ( glob: string | string[], options?: Options ): Promise<Result> => {
 
-  const [globsPositive, globsNegative] = globsPartition ( castArray ( glob ) );
-
   const cwd = options?.cwd ?? process.cwd ();
-  const ignore = [...castArray ( options?.ignore ?? [] ), ...globsNegative];
 
-  const bucketDirectories: string[][] = [];
-  const bucketFiles: string[][] = [];
-  const bucketSymlinks: string[][] = [];
+  const globsPartition = getGlobsPartition ( castArray ( glob ) );
+  const globsPositive = globsPartition[0];
+  const ignores = [...castArray ( options?.ignore ?? [] ), ...globsPartition[1]];
+  const globsNegative = ignores.filter ( ignore => isString ( ignore ) );
+  const regexesNegative = ignores.filter ( ignore => isRegExp ( ignore ) );
+  const functionsNegative = ignores.filter ( ignore => isFunction ( ignore ) );
 
-  for ( const [folders, foldersGlobs] of globsExplode ( globsPositive ) ) {
+  const resultEmpty: Result = { directories: [], files: [], symlinks: [] };
+  const result: Result = { directories: [], files: [], symlinks: [] };
 
-    const isMatch = globsCompile ( foldersGlobs );
+  const isIgnored = ( targetPath: string, dirent: DirentLike ): boolean => {
+    const isDirectory = dirent.isDirectory ();
+    const isSymbolicLink = dirent.isSymbolicLink ();
+    const targetRelativePath = path.relative ( cwd, targetPath );
 
-    for ( const folder of folders ) {
-
-      const rootPath = path.join ( cwd, folder ).replace ( /\/$/, '' );
-      const isIgnored = ignoreCompile ( rootPath, ignore );
-      const isRelativeMatch = ( targetPath: string ) => isMatch ( rootPath, targetPath );
-
-      const result = await readdir ( rootPath, {
-        depth: options?.depth,
-        limit: options?.limit,
-        followSymlinks: options?.followSymlinks,
-        ignore: isIgnored,
-        signal: options?.signal,
-        onDirents: options?.onDirents
-      });
-
-      bucketDirectories.push ( result.directories.filter ( isRelativeMatch ) );
-      bucketFiles.push ( result.files.filter ( isRelativeMatch ) );
-      bucketSymlinks.push ( result.symlinks.filter ( isRelativeMatch ) );
-
+    if (
+      // Ignored by some negative functions
+      functionsNegative.some ( fn => fn ( targetPath, dirent ) ) ||
+      // Ignored by some negative regex
+      regexesNegative.some ( re => re.test ( targetPath ) ) ||
+      // Ignored by some negative glob
+      zeptomatch ( globsNegative, targetRelativePath, { partial: false } ) ||
+      // Doesn't match and can't match in the future any positive globs
+      !zeptomatch ( globsPositive, targetRelativePath, { partial: isDirectory } )
+    ) {
+      return true;
     }
 
-  }
+    // Manually populating directories and symlinks, as they might get ignored early
+    if ( targetPath !== cwd ) {
+      if ( isDirectory || isSymbolicLink ) {
+        if ( zeptomatch ( globsPositive, targetRelativePath, { partial: false } ) ) {
+          if ( isDirectory ) {
+            result.directories.push ( targetPath );
+          } else if ( isSymbolicLink ) {
+            result.symlinks.push ( targetPath );
+          }
+        }
+      }
+    }
 
-  const directories = uniqFlat ( bucketDirectories );
-  const files = uniqFlat ( bucketFiles );
-  const symlinks = uniqFlat ( bucketSymlinks );
+    return false;
+  };
 
-  return { directories, files, symlinks };
+  const {files} = await readdir ( cwd, {
+    depth: options?.depth,
+    limit: options?.limit,
+    followSymlinks: options?.followSymlinks,
+    ignore: isIgnored,
+    signal: options?.signal,
+    onDirents: options?.onDirents
+  });
+
+  if ( options?.signal?.aborted ) return resultEmpty;
+
+  result.files = files;
+
+  return result;
 
 };
 
 /* EXPORT */
 
 export default readdirGlob;
-export type {Dirent, Options, Result};
+export type {Dirent, DirentLike, Options, Result};

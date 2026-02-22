@@ -1,13 +1,4 @@
 
-/* IMPORT */
-
-import path from 'node:path';
-import zeptomatch from 'zeptomatch';
-import {explodeStart, explodeEnd} from 'zeptomatch-explode';
-import isStatic from 'zeptomatch-is-static';
-import unescape from 'zeptomatch-unescape';
-import type {ArrayMaybe} from './types';
-
 /* MAIN */
 
 const castArray = <T> ( value: T | T[] ): T[] => {
@@ -16,196 +7,50 @@ const castArray = <T> ( value: T | T[] ): T[] => {
 
 };
 
-const globExplode = ( glob: string ): [paths: string[], glob: string] => {
-
-  if ( isStatic ( glob ) ) { // Handling it as a relative path, not a glob
-
-    return [[unescape ( glob )], '**/*'];
-
-  } else { // Handling it as an actual glob
-
-    const {statics, dynamic} = explodeStart ( glob );
-
-    return [statics, dynamic];
-
-  }
-
-};
-
-const globsExplode = ( globs: string[] ): [paths: string[], globs: string[]][] => { //TODO: Optimize this more, avoiding searching both in src/ and src/foo with the same glob
-
-  const results: [string[], string[]][] = [];
-
-  for ( const glob of globs ) {
-
-    const [paths, pathsGlob] = globExplode ( glob );
-
-    if ( !paths.length ) {
-
-      paths.push ( '' );
-
-    }
-
-    for ( const path of paths ) {
-
-      const existing = results.find ( result => result[0].includes ( path ) );
-
-      if ( existing ) {
-
-        if ( !existing[1].includes ( pathsGlob ) ) {
-
-          existing[1].push ( pathsGlob );
-
-        }
-
-      } else {
-
-        results.push ([ [path], [pathsGlob] ]);
-
-      }
-
-    }
-
-  }
-
-  return results;
-
-};
-
-const globCompile = ( glob: string ): (( rootPath: string, targetPath: string ) => boolean) => { //TODO: Optimize this more, accounting for more scenarios
-
-  if ( !glob || glob === '**/*' ) { // Trivial case
-
-    return () => true;
-
-  }
-
-  const {flexibleStart, flexibleEnd, statics, dynamic} = explodeEnd ( glob );
-
-  if ( dynamic === '**/*' && statics.length && !flexibleEnd ) { // Optimized case
-
-    return ( rootPath: string, targetPath: string ): boolean => {
-
-      for ( let i = 0, l = statics.length; i < l; i++ ) {
-
-        const end = statics[i];
-
-        if ( !targetPath.endsWith ( end ) ) continue;
-
-        if ( flexibleStart ) return true;
-
-        if ( targetPath.length === end.length ) return true;
-
-        if ( isPathSep ( targetPath[targetPath.length - end.length - 1 ] ) ) return true;
-
-      }
-
-      return false;
-
-    };
-
-  } else { // Unoptimized case
-
-    const re = zeptomatch.compile ( glob );
-
-    return ( rootPath: string, targetPath: string ): boolean => {
-
-      return re.test ( path.relative ( rootPath, targetPath ) );
-
-    };
-
-  }
-
-};
-
-const globsCompile = ( globs: string[] ): (( rootPath: string, targetPath: string ) => boolean) => {
-
-  const fns = globs.map ( globCompile );
-
-  return ( rootPath, targetPath ) => fns.some ( fn => fn ( rootPath, targetPath ) );
-
-};
-
-const globsPartition = ( globs: string[] ): [positives: string[], negatives: string[]] => {
+const getGlobsPartition = ( globs: string[] ): [positives: string[], negatives: string[]] => {
 
   const positives: string[] = [];
   const negatives: string[] = [];
   const bangsRe = /^!+/;
 
-  if ( globs.length ) {
+  for ( const glob of globs ) {
 
-    for ( const glob of globs ) {
+    const match = glob.match ( bangsRe );
 
-      const match = glob.match ( bangsRe );
+    if ( match ) {
 
-      if ( match ) {
+      const bangsNr = match[0].length;
+      const bucket = bangsNr % 2 === 0 ? positives : negatives;
 
-        const bangsNr = match[0].length;
-        const bucket = bangsNr % 2 === 0 ? positives : negatives;
+      bucket.push ( glob.slice ( bangsNr ) );
 
-        bucket.push ( glob.slice ( bangsNr ) );
+    } else {
 
-      } else {
-
-        positives.push ( glob );
-
-      }
-
-    }
-
-    if ( !positives.length ) {
-
-      positives.push ( '**' );
+      positives.push ( glob );
 
     }
 
   }
 
-  return [positives, negatives];
+  if ( globs.length && !positives.length ) {
 
-};
-
-const ignoreCompile = ( rootPath: string, ignore?: ArrayMaybe<(( targetPath: string ) => boolean) | RegExp | string> ): ArrayMaybe<(( targetPath: string ) => boolean) | RegExp> | undefined => {
-
-  if ( !ignore ) return;
-
-  return castArray ( ignore ).map ( ignore => {
-
-    if ( !isString ( ignore ) ) return ignore;
-
-    const fn = globCompile ( ignore );
-
-    return ( targetPath: string ) => fn ( rootPath, targetPath );
-
-  });
-
-};
-
-const intersection = <T> ( sets: Set<T>[] ): Set<T> => {
-
-  if ( sets.length === 1 ) return sets[0];
-
-  const result = new Set<T> ();
-
-  for ( let i = 0, l = sets.length; i < l; i++ ) {
-
-    const set = sets[i];
-
-    for ( const value of set ) {
-
-      result.add ( value );
-
-    }
+    positives.push ( '**' );
 
   }
 
-  return result;
+  return [uniq ( positives ), uniq ( negatives )];
 
 };
 
-const isPathSep = ( char: string ): boolean => {
+const isFunction = ( value: unknown ): value is Function => {
 
-  return char === '/' || char === '\\';
+  return typeof value === 'function';
+
+};
+
+const isRegExp = ( value: unknown ): value is RegExp => {
+
+  return value instanceof RegExp;
 
 };
 
@@ -223,14 +68,6 @@ const uniq = <T> ( values: T[] ): T[] => {
 
 };
 
-const uniqFlat = <T> ( values: T[][] ): T[] => {
-
-  if ( values.length === 1 ) return values[0];
-
-  return uniq ( values.flat () );
-
-};
-
 /* EXPORT */
 
-export {castArray, globExplode, globsExplode, globCompile, globsCompile, globsPartition, ignoreCompile, intersection, isPathSep, isString, uniq, uniqFlat};
+export {castArray, getGlobsPartition, isFunction, isRegExp, isString, uniq};

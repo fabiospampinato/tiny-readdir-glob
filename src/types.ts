@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import type {Dirent} from 'tiny-readdir';
+import type {Dirent, DirentLike} from 'tiny-readdir';
 
 /* HELPERS */
 
@@ -16,7 +16,7 @@ type Options = {
   depth?: number,
   limit?: number,
   followSymlinks?: boolean,
-  ignore?: ArrayMaybe<(( targetPath: string ) => boolean) | RegExp | string>,
+  ignore?: ArrayMaybe<(( targetPath: string, targetContext: DirentLike ) => boolean) | RegExp | string>,
   signal?: { aborted: boolean },
   onDirents?: ( dirents: Dirent[] ) => PromiseMaybe<undefined>
 };
@@ -29,4 +29,4 @@ type Result = {
 
 /* EXPORT */
 
-export type {ArrayMaybe, PromiseMaybe, Dirent, Options, Result};
+export type {ArrayMaybe, PromiseMaybe, Dirent, DirentLike, Options, Result};
