@@ -29,7 +29,8 @@
   ],
   "dependencies": {
     "tiny-readdir": "^3.1.1",
-    "zeptomatch": "^2.1.0"
+    "zeptomatch": "^2.1.0",
+    "zeptomatch-is-static": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^18.19.130",

@@ -1,9 +1,30 @@
 
+/* IMPORT */
+
+import isGlobStatic from 'zeptomatch-is-static';
+
 /* MAIN */
 
 const castArray = <T> ( value: T | T[] ): T[] => {
 
   return Array.isArray ( value ) ? value : [value];
+
+};
+
+const getGlobNormalized = ( glob: string ): string => {
+
+  if ( isGlobStatic ( glob ) ) { // It's actually an absolute path, let's append a globstar
+
+    const globWithoutTrailingSlash = glob.replace ( /[\\\/]+$/, '' );
+    const globWithGlobstar = `${globWithoutTrailingSlash}/**`;
+
+    return globWithGlobstar;
+
+  } else {
+
+    return glob;
+
+  }
 
 };
 
@@ -22,11 +43,11 @@ const getGlobsPartition = ( globs: string[] ): [positives: string[], negatives: 
       const bangsNr = match[0].length;
       const bucket = bangsNr % 2 === 0 ? positives : negatives;
 
-      bucket.push ( glob.slice ( bangsNr ) );
+      bucket.push ( getGlobNormalized ( glob.slice ( bangsNr ) ) );
 
     } else {
 
-      positives.push ( glob );
+      positives.push ( getGlobNormalized ( glob ) );
 
     }
 
@@ -70,4 +91,4 @@ const uniq = <T> ( values: T[] ): T[] => {
 
 /* EXPORT */
 
-export {castArray, getGlobsPartition, isFunction, isRegExp, isString, uniq};
+export {castArray, getGlobNormalized, getGlobsPartition, isFunction, isRegExp, isString, uniq};

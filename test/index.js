@@ -174,6 +174,32 @@ describe ( 'Tiny Readdir Glob', it => {
 
   });
 
+  it ( 'normalizes static shallow paths', async t => {
+
+    await withFixtures ( async ({ root1Path }) => {
+
+      const resultExplicit = await readdir ( 'folder1/**', { cwd: root1Path } );
+      const resultImplicit = await readdir ( 'folder1', { cwd: root1Path } );
+
+      deepEqualResults ( resultExplicit, resultImplicit );
+
+    });
+
+  });
+
+  it ( 'normalizes static deep paths', async t => {
+
+    await withFixtures ( async ({ root1Path }) => {
+
+      const resultExplicit = await readdir ( 'folder1/deep/**', { cwd: root1Path } );
+      const resultImplicit = await readdir ( 'folder1/deep', { cwd: root1Path } );
+
+      deepEqualResults ( resultExplicit, resultImplicit );
+
+    });
+
+  });
+
   it ( 'returns all entries except excluded ones with only a negation pattern', async t => {
 
     await withFixtures ( async ({ root1Path, root2Path, folder1Path, folder2Path, file1aPath, file1bPath, file2Path, symlink1FromPath, symlink2FromPath }) => {
